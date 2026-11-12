@@ -9,7 +9,7 @@ Before a single NVMe command can be fetched, your SSD's PCIe Endpoint hardware a
 ### Intuition
 When you write SSD firmware, you must think in **PCIe Transaction Layer Packets (TLPs)**. Every interaction between the Host and your SSD controller is one of two kinds of PCIe memory transactions:
 1. **Posted Transactions (`MWr` — Memory Write):** Fire-and-forget. The sender transmits the address and data payload in a single packet; no completion packet is ever returned.
-2. **Non-Posted Transactions (`MRd` — Memory Read Request $\to$ `CplD` — Completion with Data):** Split-transaction round trip. The requester sends an `MRd` TLP containing a **Requester ID**, **Tag** (e.g., 8-bit or 10-bit tag `0..255`), **64-bit Host Address**, and **Length**. Microseconds later (typically $500\text{ ns} \text{ to } 1.5\ \mu\text{s}$ across the host root complex and DRAM controller), the target returns one or more `CplD` packets carrying that Tag and the requested bytes.
+2. **Non-Posted Transactions (`MRd` — Memory Read Request $\to$ `CplD` — Completion with Data):** Split-transaction round trip. The requester sends an `MRd` TLP containing a **Requester ID**, **Tag** (e.g., 8-bit `0..255` or 10-bit `0..1023` tag), **64-bit Host Address**, and **Length**. Microseconds later (typically $500\text{ ns} \text{ to } 1.5\ \mu\text{s}$ across the host root complex and DRAM controller), the target returns one or more `CplD` packets carrying that Tag and the requested bytes.
 
 ### Why the SSD Is Almost Always the PCIe Bus Master
 Look at who initiates which TLP in NVMe:
@@ -147,7 +147,7 @@ Unlike `CC.EN = 0` (where the host politely waits for `CSTS.RDY = 0`), a **PCIe 
 Let us trace the exact 32-bit/64-bit register values written by a Linux `nvme` driver and responded to by our HIL Firmware on a controller with 4 KiB pages and 64-entry Admin Queues:
 
 1. **Before Boot (`t = 0`):**
-   - `CAP = 0x0020001401030FFF`:
+   - `CAP = 0x0020002014030FFF`:
      - `MQES = 0x0FFF` ($4096$ max entries per queue)
      - `CQR = 1`, `AMS = 01b` (WRR supported)
      - `TO = 0x14` ($20 \times 500\text{ ms} = 10\text{ s}$)

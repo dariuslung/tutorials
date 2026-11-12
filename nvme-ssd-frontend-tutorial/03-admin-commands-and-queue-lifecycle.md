@@ -44,12 +44,13 @@ In each case, the host passes a 4 KiB Host DRAM buffer in `PRP1` (and `PRP2` if 
    - `Bytes [63:24]` (`MN`): 40-byte ASCII Model Number.
    - `Bytes [71:64]` (`FR`): 8-byte ASCII Firmware Revision.
    - `Byte 77` (`MDTS`): **Maximum Data Transfer Size** in units of the minimum host page size ($2^{\text{MDTS}} \times 2^{12 + \text{CAP.MPSMIN}}$). *Crucial for Firmware:* If your internal Command Slot / PRP table can only handle up to $256\text{ KiB}$ ($64$ pages of $4\text{ KiB}$) per command, you set `MDTS = 6` ($2^6 \times 4\text{ KiB} = 256\text{ KiB}$) so the host OS block layer automatically splits any larger I/O!
-   - `Bytes [259:258]` (`OACS`): Optional Admin Command Support (Firmware Commit, Format NVM, Security).
-   - `Byte 262` (`AERL`): **Async Event Request Limit** (0's-based! E.g., `3` means the host may park up to $4$ concurrent `AER` commands in your firmware).
+   - `Bytes [257:256]` (`OACS`): Optional Admin Command Support (Firmware Commit, Format NVM, Security).
+   - `Byte 258` (`ACL`): **Abort Command Limit** (0's-based! E.g., `3` means up to $4$ concurrent `Abort` commands).
+   - `Byte 259` (`AERL`): **Async Event Request Limit** (0's-based! E.g., `3` means the host may park up to $4$ concurrent `AER` commands in your firmware).
    - `Byte 512` (`SQES`): Required/Max I/O SQ Entry Size (`0x66` $\implies \min = 2^6 = 64\text{ B}, \max = 2^6 = 64\text{ B}$).
    - `Byte 513` (`CQES`): Required/Max I/O CQ Entry Size (`0x44` $\implies \min = 2^4 = 16\text{ B}, \max = 2^4 = 16\text{ B}$).
    - `Bytes [519:516]` (`NN`): **Number of Namespaces** supported by the controller (e.g., `1`).
-   - `Byte 524` (`VWC`): **Volatile Write Cache** (`Bit 0 = 1` tells the host your SSD uses DRAM/SRAM write caching and supports the `Flush` command!).
+   - `Byte 525` (`VWC`): **Volatile Write Cache** (`Bit 0 = 1` tells the host your SSD uses DRAM/SRAM write caching and supports the `Flush` command!).
    - `Bytes [539:536]` (`SGLS`): **SGL Support** (`Bit 0 = 1` if your DMA hardware supports SGLs for NVM commands).
 
 2. **`Identify Namespace` (`CNS = 0x00, NSID = 1`, 4096 Bytes):**
@@ -209,7 +210,7 @@ class HILAdminControlPlane:
             buf[24:64] = b"Antigravity Virtual NVMe Controller     "  # MN (40B)
             buf[64:72] = b"FW2.0.01"                               # FR (8B)
             buf[77] = 6                                            # MDTS = 6 (2^6 * 4KiB = 256KiB)
-            buf[262] = self.aerl                                   # AERL = 3 (4 AERs max)
+            buf[259] = self.aerl                                   # AERL = 3 (4 AERs max)
             buf[512] = 0x66                                        # SQES = 64B
             buf[513] = 0x44                                        # CQES = 16B
             struct.pack_into("<I", buf, 516, 1)                    # NN = 1 namespace
@@ -219,7 +220,7 @@ class HILAdminControlPlane:
             struct.pack_into("<QQQ", buf, 0, nsze, nsze, nsze)
             buf[26] = 0       # FLBAS = LBAF0
             struct.pack_into("<I", buf, 128, (12 << 16) | 0)       # LBAF0: LBADS=12 (4096B), MS=0
-            return (cid, nsze, SC_SUCCESS)
+            return (cid, len(buf), SC_SUCCESS)
         return (cid, 0, SC_INVALID_FIELD)
 
     def _handle_set_features(self, cid: int, cdw10: int, cdw11: int):

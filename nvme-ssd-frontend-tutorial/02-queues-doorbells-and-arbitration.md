@@ -54,7 +54,7 @@ typedef struct {
     uint8_t  draining   : 1;  // 1 = Delete I/O SQ in progress (stop fetching, drain in-flight!)
     uint8_t  reserved   : 5;
     uint16_t in_flight_cnt;   // Number of commands fetched from this SQ not yet completed (for Delete drain)
-    uint8_t  pad[10];
+    uint8_t  pad[12];
 } SQCT_Entry_t;
 
 // Stored in Frontend Controller SRAM: 32 bytes per Completion Queue
@@ -69,6 +69,7 @@ typedef struct {
     uint8_t  pc_bit     : 1;  // 1 = Physically Contiguous
     uint8_t  valid      : 1;  // 1 = Queue active
     uint8_t  reserved   : 4;
+    uint8_t  rsvd_align;      // Explicit alignment padding before 16-bit bound_sq_cnt
     uint16_t bound_sq_cnt;    // Reference count of SQs mapped to this CQ (must be 0 to Delete CQ!)
     uint16_t unack_cqe_cnt;   // Unacknowledged completions since last CQyHDBL write (for IRQ coalescing)
     uint8_t  pad[10];
@@ -90,7 +91,7 @@ Suppose the host CPU submits 4 new commands to `SQ 3` (moving `SQ_Tail` from `10
 1. **Doorbell Latch & Legality Check:**
    - The PCIe Endpoint receives the 4-byte `MWr` TLP and extracts `QID = 3` and `NewTail = 14`.
    - Hardware checks `SQCT[3].valid == 1`, `SQCT[3].draining == 0`, and `NewTail < SQCT[3].qsize`.
-   - *(Spec Edge Case — Invalid Doorbell Write):* If `NewTail >= qsize` or `NewTail == SQCT[3].sq_tail` (duplicate doorbell write), hardware ignores the write and raises an interrupt to HIL FW to post an **Asynchronous Event (`Invalid Doorbell Register Write Value` / `Transient Internal Error`)** if configured!
+   - *(Spec Edge Case — Invalid Doorbell Write):* If `NewTail == SQCT[3].sq_tail` (a redundant doorbell write), hardware simply ignores it as a no-op. If `NewTail >= SQCT[3].qsize` or `NewTail` overtakes `sq_head`, hardware ignores the write and raises an interrupt to HIL FW to post an **Asynchronous Event (`Invalid Doorbell Write Value`)** if configured!
 2. **Update `SQCT[3].sq_tail` & Set Active Bit in Arbitration Bitmap:**
    - Hardware sets `SQCT[3].sq_tail = 14`.
    - Since `sq_head (10) != sq_tail (14)`, `SQ 3` now has `(14 - 10) = 4` pending SQEs. Hardware sets bit `3` in the **Active SQ Bitmap** corresponding to `SQCT[3].prio_class`.

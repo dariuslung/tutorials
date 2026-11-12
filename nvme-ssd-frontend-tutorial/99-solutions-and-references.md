@@ -48,7 +48,7 @@
   - Slots `500 .. 509` ($10$ slots) are currently **unfetched commands** owned by the SSD.
   - Slots `510 .. 1023` and `0 .. 498` ($1013$ slots) are **free slots** available to the Host!
   - Wait: can the host legally advance `sq_tail` from `510` all the way past `500` to `505`? **NO!** Because to reach `505` moving forward from `510`, `sq_tail` would have to wrap around `1023 -> 0` and **overtake `sq_head = 500`**, overwriting unfetched slots `500 .. 504`!
-- **Hardware/Firmware Rule:** Any doorbell write `new_tail` where the forward distance `(new_tail - old_tail) % qsize` is greater than the free space `(sq_head - 1 - old_tail) % qsize` (or equal to `0`) is an **illegal backward/overflow doorbell write** (`Invalid Doorbell Register Write Value`)!
+- **Hardware/Firmware Rule:** Any doorbell write `new_tail != old_tail` where the forward distance `(new_tail - old_tail) % qsize` is greater than the free space `(sq_head - 1 - old_tail) % qsize` (or `new_tail >= qsize`) is an **illegal backward/overflow doorbell write** (`Invalid Doorbell Write Value`). Meanwhile, a redundant write where `new_tail == old_tail` is ignored by hardware as a no-op.
 
 #### Problem 2.3: Sizing the Internal `SQCT` / `CQCT` / Doorbell SRAM for 1024 Queue Pairs
 - `SQCT`: $1025 \text{ queues (Admin + 1024 I/O)} \times 32\text{ B} = 32,800\text{ B} \approx 32\text{ KiB}$.

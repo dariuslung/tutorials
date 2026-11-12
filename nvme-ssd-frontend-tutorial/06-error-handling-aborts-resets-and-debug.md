@@ -19,7 +19,7 @@ When a host I/O command takes too long (or a user process is killed), the host d
 
 Look at the two **strict ordering rules** mandated by the NVMe Base Specification (Section 5.1) for `Abort`:
 1. **Rule 1 (Target Command CQE Must Precede Abort CQE):**
-   If the target command `(SQID, CID)` is found in flight, its Completion Queue Entry (either with status **`Command Aborted Requested (SCT=0x00, SC=0x07)`** if successfully aborted, or normal completion `SC=0x00` if it already finished) **MUST be posted to `CQ[CQID]` BEFORE the CQE for the Admin `Abort` command itself is posted to `CQ 0`**!
+   If the target command `(SQID, CID)` is found in flight, its Completion Queue Entry (either with status **`Command Abort Requested (SCT=0x00, SC=0x07)`** if successfully aborted, or normal completion `SC=0x00` if it already finished) **MUST be posted to `CQ[CQID]` BEFORE the CQE for the Admin `Abort` command itself is posted to `CQ 0`**!
 2. **Rule 2 (No DMA After Target CQE):**
    The moment the CQE for `(SQID, CID)` is posted to `CQ[CQID]`, the host OS frees the physical memory pages pointed to by `PRP1/PRP2`! Therefore, **your firmware must NEVER post `SC=0x07` while a hardware DMA engine or NAND channel is still actively writing to `PRP1/PRP2`!**
 
@@ -48,7 +48,7 @@ flowchart LR
    - Any slice already in the FTL is fast-cancelled (or discarded into a dummy SRAM sink buffer when its NAND read finishes, **without** DMA-writing to the host's PRPs).
    - Any PCIe `MRd` already on the PCIe wire is allowed to finish draining into internal SRAM and then discarded.
 4. **Post the Two CQEs in Strict Sequence:**
-   - **First:** Post the I/O CQE for `(SQID, CID)` to `CQ[SQCT[SQID].cqid]` with Status **`SCT=0x00, SC=0x07` (`Command Aborted Requested`)**, and wait for the CQE Posting Engine to confirm it is pushed to the PCIe TX FIFO.
+   - **First:** Post the I/O CQE for `(SQID, CID)` to `CQ[SQCT[SQID].cqid]` with Status **`SCT=0x00, SC=0x07` (`Command Abort Requested`)**, and wait for the CQE Posting Engine to confirm it is pushed to the PCIe TX FIFO.
    - **Second:** Post the Admin CQE for the `Abort` command to `CQ 0` with `DW0 = 0` (indicating successful abort) and `SC = 0x00`!
 
 ---
@@ -111,8 +111,9 @@ By **Little's Law** ($L = \lambda \times W$), the number of concurrent in-flight
 
 ### 2. HIL Firmware CPU Cycle Budget Profiling
 Suppose your HIL Frontend runs on a dual-core **1.2 GHz Cortex-R52** ($2.4 \times 10^9$ total cycles/sec across both cores). To hit $2,000,000$ IOPS:
-$$\text{Max FW Cycles per 4 KiB I/O} = \frac{2.4 \times 10^9\text{ cycles/sec}}{2,000,000\text{ IOPS}} = \mathbf{1,200\text{ cycles}} \quad (600\text{ cycles per core})$$
-Where do those 600 cycles go if you aren't careful?
+$$\text{Max FW Cycles per 4 KiB I/O} = \frac{2.4 \times 10^9\text{ cycles/sec}}{2,000,000\text{ IOPS}} = \mathbf{1,200\text{ total cycles}}$$
+*(That is $1,200$ cycles per I/O if each core processes half the IOPS, or $600$ cycles per core per I/O if every I/O is split 50/50 across both cores.)*
+Where do those cycles go if you aren't careful?
 - **Rule 1:** Keep `SQCT`, `CQCT`, `CmdSlot` table, and `SubReq` headers in **0-wait-state Tightly Coupled Memory (TCM / local SRAM)**—never in external DRAM!
 - **Rule 2:** Let hardware auto-fetch the first 4 KiB PRP and auto-post normal `SC=0x00` CQEs whenever `remaining_subreqs` hits `0`, so HIL Firmware only touches a command once at dispatch ($\sim 80$ cycles) and zero times on normal completion!
 
@@ -228,7 +229,7 @@ print(f"PI Check (Wrong LBA=1001):         SC=0x{sim.verify_pi_type1(payload, pi
 
 *(Full step-by-step solutions are in [Chapter 99](./99-solutions-and-references.md).)*
 
-1. **`Abort` Command Limit (`ACL`) in `Identify Controller`:** Byte 259 of `Identify Controller` reports `ACL` (Abort Command Limit, 0's-based, e.g., `ACL = 3` means $4$ concurrent `Abort` commands). What must HIL Firmware do if the host submits a 5th concurrent `Abort` command while 4 earlier `Abort` commands are still draining in-flight DMAs?
+1. **`Abort` Command Limit (`ACL`) in `Identify Controller`:** Byte 258 of `Identify Controller` reports `ACL` (Abort Command Limit, 0's-based, e.g., `ACL = 3` means $4$ concurrent `Abort` commands). What must HIL Firmware do if the host submits a 5th concurrent `Abort` command while 4 earlier `Abort` commands are still draining in-flight DMAs?
 2. **Fused Operations (`FUSE = 01b` + `10b`, e.g., `Compare and Write`):** In NVMe, an atomic `Compare and Write` is sent as two adjacent SQEs in the same Submission Queue: SQE #1 has `FUSE = 01b` (`Compare`) and SQE #2 has `FUSE = 10b` (`Write` to the exact same `SLBA` and `NLB`). What must the Frontend Command Parser do if:
    - (a) The two commands do not have the same `SLBA`/`NLB`, or another non-fused command is submitted right after `FUSE = 01b`?
    - (b) The first command (`Compare`) fails with `Compare Failure (SCT=0x02, SC=0x85)`? What status code must be returned for the second command (`Write`)?
