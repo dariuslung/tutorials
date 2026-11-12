@@ -268,7 +268,7 @@ x_norm_sq = np.sum(x ** 2)
 for dist in ["Gaussian", "Rademacher"]:
     trials = 400
     raw_dots = []
-    rescaled_Fetch = np.zeros(N)
+    rescaled_mean = np.zeros(N)
     rescaled_err_sq = []
 
     for _ in range(trials):
@@ -286,10 +286,10 @@ for dist in ["Gaussian", "Rademacher"]:
 
         # Relative projection along x: (x^T x_raw) / ||x||^2
         raw_dots.append(np.dot(x, x_raw) / x_norm_sq)
-        rescaled_Fetch += x_pinv / trials
+        rescaled_mean += x_pinv / trials
         rescaled_err_sq.append(np.sum((x_pinv - x) ** 2))
 
-    rel_bias = np.linalg.norm(rescaled_Fetch - x) / np.linalg.norm(x)
+    rel_bias = np.linalg.norm(rescaled_mean - x) / np.linalg.norm(x)
     emp_ratio = np.mean(rescaled_err_sq) / x_norm_sq
     print(f"=== {dist} Sensing Matrix (N={N}, M={M}, {trials} trials) ===")
     print(f"  Mean unscaled shrink (x^T x_raw / ||x||^2): {np.mean(raw_dots):.4f} (Theory M/N = {r:.4f})")

@@ -207,7 +207,7 @@ Run this self-contained script to verify:
 import numpy as np
 
 rng = np.random.default_rng(42)
-N, M, k = 1024, 256, 32  # k=32 is well below the Donoho-Tanner limit k_max=62
+N, M, k = 1024, 256, 32  # k=32 is well below the Donoho-Tanner limit k_max=68
 
 Phi = rng.normal(0.0, 1.0 / np.sqrt(M), size=(M, N))
 x_true = np.zeros(N)

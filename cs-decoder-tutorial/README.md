@@ -10,7 +10,7 @@ Welcome to this complete tutorial on the two canonical decoders of linear compre
 
 Every mathematical concept, derivation, and numerical experiment in this tutorial is anchored to the following system model:
 
-1. **Block Slicing:** During distributed data-parallel training across $W$ workers, each worker $i \in \{1, \dots, W\}$ computes a local gradient tensor and slices it into contiguous 1D blocks $g_i \in \mathbb{R}^N$ of size **$N = 1024$** (`float32` values).When analyzing a single block in isolation, we denote the uncompressed vector as $x \in \mathbb{R}^N$.
+1. **Block Slicing:** During distributed data-parallel training across $W$ workers, each worker $i \in \{1, \dots, W\}$ computes a local gradient tensor and slices it into contiguous 1D blocks $g_i \in \mathbb{R}^N$ of size **$N = 1024$** (`float32` values). When analyzing a single block in isolation, we denote the uncompressed vector as $x \in \mathbb{R}^N$.
 2. **Linear Encoding (Projection):** Each block $x \in \mathbb{R}^N$ is compressed into a measurement vector $y \in \mathbb{R}^M$ via a matrix-vector multiplication:
    $$y = \Phi x$$
    where $\Phi \in \mathbb{R}^{M \times N}$ has compression ratio $r = M/N \in (0, 1]$. Our canonical operating point is **$r = 0.25$**, meaning **$M = 256$** measurements per block of $N = 1024$ parameters (a $4\times$ reduction in communication volume).

@@ -44,7 +44,7 @@ $$(\text{P}_0) \qquad \hat{x}_{\ell_0} = \arg\min_{z \in \mathbb{R}^N} \|z\|_0 \
 
 ### Why Can't We Use $(\text{P}_0)$?
 Because $(\text{P}_0)$ is **NP-hard** in general (Natarajan, 1995)! To solve $(\text{P}_0)$ directly when $N = 1024$ and $k = 50$, you would have to test which subset of $k$ columns of $\Phi$ spans $y$. The number of subsets is:
-$$\binom{1024}{50} \approx 3.4 \times 10^{84}$$
+$$\binom{1024}{50} \approx 3.19 \times 10^{85}$$
 which exceeds the number of atoms in the observable universe ($\sim 10^{80}$).
 
 ---
@@ -140,7 +140,7 @@ $$(1 - \delta_k) \|v\|_2^2 \le \|\Phi v\|_2^2 \le (1 + \delta_k) \|v\|_2^2$$
 *If $\Phi$ satisfies the RIP of order $2k$ with $\delta_{2k} < \sqrt{2} - 1 \approx 0.414$ (later sharpened to $\delta_{2k} < 1/\sqrt{2} \approx 0.707$ by Cai & Zhang, 2014), then $\Phi$ satisfies the robust Null Space Property of order $k$, and Basis Pursuit recovers every $k$-sparse $x$ exactly.*
 
 **Proof Sketch (Why RIP of order $2k$ prevents $h \in \text{null}(\Phi)$ from being concentrated on $S$):**
-Take $h \in \text{null}(\Phi)$ and partition its indices in decreasing order of magnitude into blocks $S_0$ (the $k$ largest), $S_1$ (the next $k$ largest), $S_2$, etc. Since $\Phi h = 0$, we have $\Phi(h_{S_0} + h_{S_1}) = -\sum_{m \ge 2} \Phi h_{S_m}$. Because $h_{S_0} + h_{S_1}$ is $2k$-sparse, RIP gives $\|\Phi(h_{S_0} + h_{S_1})\|_2 \ge \sqrt{1 - \delta_{2k}} \|h_{S_0}\|_{2}$. On the other hand, each $h_{S_m}$ ($m \ge 2$) has entries smaller than the average entry of $h_{S_{m-1}}$, so $\|h_{S_m}\|_2 \le \frac{1}{\sqrt{k}}\|h_{S_{m-1}}\|_1$. Summing the triangle inequality over $m \ge 2$ and applying Cauchy–Schwarz $\|h_{S_0}\|_1 \le \sqrt{k}\|h_{S_0}\|_2$ directly yields $\|h_{S_0}\|_1 \le \rho \|h_{S_0^c}\|_1$ with $\rho < 1$. $\blacksquare$
+Take $h \in \text{null}(\Phi)$ and partition its indices in decreasing order of magnitude into blocks $S_0$ (the $k$ largest), $S_1$ (the next $k$ largest), $S_2$, etc. Since $\Phi h = 0$, we have $\Phi(h_{S_0} + h_{S_1}) = -\sum_{m \ge 2} \Phi h_{S_m}$. Because $h_{S_0} + h_{S_1}$ is $2k$-sparse, RIP gives $\|\Phi(h_{S_0} + h_{S_1})\|_2^2 \ge (1 - \delta_{2k}) (\|h_{S_0}\|_2^2 + \|h_{S_1}\|_2^2)$. On the other hand, taking the inner product $\langle \Phi(h_{S_0} + h_{S_1}), -\sum_{m \ge 2} \Phi h_{S_m}\rangle$, using the restricted orthogonality bound $|\langle \Phi u, \Phi v \rangle| \le \delta_{2k}\|u\|_2\|v\|_2$ for disjoint $k$-sparse $u, v$, and noting $\|h_{S_m}\|_2 \le \frac{1}{\sqrt{k}}\|h_{S_{m-1}}\|_1$ for $m \ge 2$, Cauchy–Schwarz ($\|h_{S_0}\|_1 \le \sqrt{k}\|h_{S_0}\|_2$) directly yields $\|h_{S_0}\|_1 \le \rho \|h_{S_0^c}\|_1$ with $\rho = \frac{\sqrt{2}\delta_{2k}}{1 - \delta_{2k}} < 1$ whenever $\delta_{2k} < \sqrt{2} - 1$. $\blacksquare$
 
 ---
 
@@ -185,13 +185,13 @@ Here are the exact numerical values of the Donoho–Tanner phase transition $\rh
 
 | Compression Ratio $r = \delta = M/N$ | Critical Ratio $\rho_W(\delta) = k_{\max}/M$ | Max Recoverable Sparsity Fraction $k_{\max}/N = r \cdot \rho_W(r)$ | Max Recoverable Non-Zeros $k_{\max}$ at $N = 1024$ |
 | :---: | :---: | :---: | :---: |
-| $0.10$ ($M = 102$) | $\approx 0.193$ | $1.9\%$ of entries | **$k_{\max} \approx 20$** out of $1024$ |
-| **$0.25$ ($M = 256$)** | **$\approx 0.241$** | **$6.0\%$ of entries** | **$k_{\max} \approx 62$ out of $1024$** |
-| $0.50$ ($M = 512$) | $\approx 0.332$ | $16.6\%$ of entries | **$k_{\max} \approx 170$** out of $1024$ |
-| $0.75$ ($M = 768$) | $\approx 0.471$ | $35.3\%$ of entries | **$k_{\max} \approx 362$** out of $1024$ |
+| $0.10$ ($M = 102$) | $\approx 0.189$ | $1.9\%$ of entries | **$k_{\max} \approx 19$** out of $1024$ |
+| **$0.25$ ($M = 256$)** | **$\approx 0.267$** | **$6.7\%$ of entries** | **$k_{\max} \approx 68$ out of $1024$** |
+| $0.50$ ($M = 512$) | $\approx 0.386$ | $19.3\%$ of entries | **$k_{\max} \approx 197$** out of $1024$ |
+| $0.75$ ($M = 768$) | $\approx 0.534$ | $40.0\%$ of entries | **$k_{\max} \approx 410$** out of $1024$ |
 
 > **Look at the row for your setting ($r = 0.25, M = 256, N = 1024$):**
-> Even for an **idealized, noiseless, strictly sparse** vector $x \in \mathbb{R}^{1024}$, $\ell_1$ minimization can only recover $x$ if at most **$k_{\max} \approx 62$ out of $1024$ entries ($6.0\%$)** are non-zero! As soon as a block has $70, 100,$ or $1024$ active coordinates, $\ell_1$ minimization sits **above the Donoho–Tanner phase transition** and breaks down completely.
+> Even for an **idealized, noiseless, strictly sparse** vector $x \in \mathbb{R}^{1024}$, $\ell_1$ minimization can only recover $x$ if at most **$k_{\max} \approx 68$ out of $1024$ entries ($6.7\%$)** are non-zero! As soon as a block has $75, 100,$ or $1024$ active coordinates, $\ell_1$ minimization sits **above the Donoho–Tanner phase transition** and breaks down completely.
 
 ---
 
@@ -220,7 +220,7 @@ Notice the contrast:
 
 ## 4.9 Empirical Verification in NumPy: The Donoho–Tanner Phase Transition
 
-This runnable script sweeps the sparsity $k$ across the Donoho–Tanner boundary ($k_{\max} \approx 0.241 M$) at ratio $r = M/N = 0.25$ using FISTA to solve Basis Pursuit ($\lambda \to 0$) and verifies the sharp cliff from $100\%$ recovery to $0\%$ recovery:
+This runnable script sweeps the sparsity $k$ across the Donoho–Tanner boundary ($k_{\max} \approx 0.267 M$) at ratio $r = M/N = 0.25$ using FISTA to solve Basis Pursuit ($\lambda \to 0$) and verifies the sharp cliff from $100\%$ recovery to $0\%$ recovery:
 
 ```python
 import numpy as np
@@ -253,7 +253,7 @@ N, M = 256, 64
 r = M / N
 
 print(f"Donoho-Tanner Phase Transition Sweep at r = M/N = {r:.2f} (N={N}, M={M})")
-print(f"Theoretical critical sparsity k_max ≈ 0.241 * M = {0.241*M:.1f}\n")
+print(f"Theoretical critical sparsity k_max ≈ 0.267 * M = {0.267*M:.1f}\n")
 print(f"{'Sparsity k':>10} | {'k / M':>7} | {'L1 Rel Error':>14} | {'Pinv Rel Error':>15} | {'L1 Success Rate':>15}")
 print("-" * 72)
 
@@ -288,4 +288,4 @@ for k in [4, 8, 12, 15, 18, 24, 32, 64]:
 
 1. **Verifying the Null Space Property on a Concrete $2 \times 3$ Matrix:** Return to the matrix $\Phi = \begin{bmatrix} 1 & 0 & 1 \\ 0 & 1 & 1 \end{bmatrix}$ from Chapter 2, Example 2. Find a basis vector $h$ for $\text{null}(\Phi)$ and check directly whether $\|h_S\|_1 < \|h_{S^c}\|_1$ holds for **every** subset $S \subset \{1, 2, 3\}$ of size $k = 1$. What does Theorem 4.2 then guarantee for all 1-sparse vectors $x \in \mathbb{R}^3$?
 2. **Why $0 < p < 1$ Fails Convexity:** Take two 1-sparse points on the axes in $\mathbb{R}^2$: $u = [1, 0]^T$ and $v = [0, 1]^T$. For $p = 1/2$, compute $\|u\|_{1/2}^{1/2} = \sum |u_j|^{1/2}$, $\|v\|_{1/2}^{1/2}$, and the midpoint value $\|\frac{1}{2}u + \frac{1}{2}v\|_{1/2}^{1/2}$. Why does this prove that minimizing $\sum |z_j|^p$ on a line can trap gradient-based solvers in a non-optimal corner?
-3. **Power-Law Compressibility Calculation:** Suppose a block $x \in \mathbb{R}^{1024}$ has sorted magnitudes $|x_{(i)}| = i^{-s}$. Compute the ratio of the tail $\ell_1$ norm $\sigma_{62}(x)_1 = \sum_{i=63}^{1024} i^{-s}$ to the top-62 $\ell_1$ norm $\sum_{i=1}^{62} i^{-s}$ for (a) $s = 2.0$ (highly compressible) vs. (b) $s = 0.5$ (weakly decaying, closer to real gradients). How does this explain why Theorem 4.4 succeeds for (a) and fails for (b)?
+3. **Power-Law Compressibility Calculation:** Suppose a block $x \in \mathbb{R}^{1024}$ has sorted magnitudes $|x_{(i)}| = i^{-s}$. Compute the ratio of the tail $\ell_1$ norm $\sigma_{68}(x)_1 = \sum_{i=69}^{1024} i^{-s}$ to the top-68 $\ell_1$ norm $\sum_{i=1}^{68} i^{-s}$ for (a) $s = 2.0$ (highly compressible) vs. (b) $s = 0.5$ (weakly decaying, closer to real gradients). How does this explain why Theorem 4.4 succeeds for (a) and fails for (b)?

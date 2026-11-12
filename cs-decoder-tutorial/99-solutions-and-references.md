@@ -95,15 +95,15 @@
   $$h(m) = \sqrt{0.5} + \sqrt{0.5} = \sqrt{2} \approx 1.414 > 1 = \frac{1}{2}h(u) + \frac{1}{2}h(v)$$
 - Because the midpoint has a strictly *higher* value than the average of the endpoints, $h(z)$ is **concave** along the line segment connecting $u$ and $v$, creating a mountain peak in the middle and two separate local minima at the two axes!
 
-#### Question 4.3: Power-Law Compressibility Calculation ($N = 1024, k = 62$)
+#### Question 4.3: Power-Law Compressibility Calculation ($N = 1024, k = 68$)
 - **(a) Fast decay $s = 2.0$ ($|x_{(i)}| = i^{-2}$):**
-  - Top-62 $\ell_1$ norm: $\sum_{i=1}^{62} i^{-2} \approx 1.629$.
-  - Tail $\ell_1$ norm: $\sigma_{62}(x)_1 = \sum_{i=63}^{1024} i^{-2} \approx \int_{62.5}^{1024.5} t^{-2}\,dt \approx 0.015$.
-  - Ratio $\sigma_{62}(x)_1 / \|x_{\text{top-}62}\|_1 \approx 0.015 / 1.629 \approx \mathbf{0.0092}$ (**$< 1\%$ tail!**). Theorem 4.4 gives tiny error: $\frac{\sigma_{62}(x)_1}{\sqrt{62}} \approx 0.0019$.
+  - Top-68 $\ell_1$ norm: $\sum_{i=1}^{68} i^{-2} \approx 1.630$.
+  - Tail $\ell_1$ norm: $\sigma_{68}(x)_1 = \sum_{i=69}^{1024} i^{-2} \approx \int_{68.5}^{1024.5} t^{-2}\,dt \approx 0.0136$.
+  - Ratio $\sigma_{68}(x)_1 / \|x_{\text{top-}68}\|_1 \approx 0.0136 / 1.630 \approx \mathbf{0.0084}$ (**$< 1\%$ tail!**). Theorem 4.4 gives tiny error: $\frac{\sigma_{68}(x)_1}{\sqrt{68}} \approx 0.0017$.
 - **(b) Slow decay $s = 0.5$ ($|x_{(i)}| = i^{-0.5}$):**
-  - Top-62 $\ell_1$ norm: $\sum_{i=1}^{62} i^{-0.5} \approx 2\sqrt{62} - 1.46 \approx 14.29$.
-  - Tail $\ell_1$ norm: $\sigma_{62}(x)_1 = \sum_{i=63}^{1024} i^{-0.5} \approx 2(\sqrt{1024} - \sqrt{62}) \approx 2(32 - 7.87) = 48.25$.
-  - Ratio $\sigma_{62}(x)_1 / \|x_{\text{top-}62}\|_1 \approx 48.25 / 14.29 \approx \mathbf{3.38}$ (**the tail is $3.4\times$ larger than the head!**).
+  - Top-68 $\ell_1$ norm: $\sum_{i=1}^{68} i^{-0.5} \approx 2\sqrt{68.5} - 1.46 \approx 15.09$.
+  - Tail $\ell_1$ norm: $\sigma_{68}(x)_1 = \sum_{i=69}^{1024} i^{-0.5} \approx 2(\sqrt{1024.5} - \sqrt{68.5}) \approx 2(32.01 - 8.28) = 47.46$.
+  - Ratio $\sigma_{68}(x)_1 / \|x_{\text{top-}68}\|_1 \approx 47.46 / 15.09 \approx \mathbf{3.14}$ (**the tail is $3.1\times$ larger than the head!**).
 
 ---
 
@@ -168,7 +168,7 @@
 - **Donoho, D. L. (2006).** *Compressed sensing.* IEEE Transactions on Information Theory, 52(4), 1289–1306.
   *(Coins the term "compressed sensing" and establishes high-dimensional polytope recovery bounds.)*
 - **Donoho, D. L., & Tanner, J. (2009).** *Observed universality of phase transitions in high-dimensional geometry, with implications for modern data analysis and signal processing.* Philosophical Transactions of the Royal Society A, 367(1906), 4273–4293.
-  *(Source of the exact phase transition curve $\rho_W(\delta)$ in Section 4.7, including $\rho_W(0.25) \approx 0.241$.)*
+  *(Source of the exact phase transition curve $\rho_W(\delta)$ in Section 4.7, including $\rho_W(0.25) \approx 0.267$.)*
 - **Baraniuk, R., Davenport, M., DeVore, R., & Wakin, M. (2008).** *A simple proof of the restricted isometry property for random matrices.* Constructive Approximation, 28(3), 253–263.
   *(Source of the covering-number + sub-Gaussian concentration proof of $M \gtrsim C k \log(N/k)$ in Section 4.6.)*
 - **Foucart, S., & Rauhut, H. (2013).** *A Mathematical Introduction to Compressive Sensing.* Birkhäuser.
@@ -195,7 +195,7 @@
 - **Standard Mathematical Results (Proven Theorems):**
   - Decomposition $\mathbb{R}^N = \text{row}(\Phi) \oplus \text{null}(\Phi)$, $\Phi^+ = \Phi^T(\Phi\Phi^T)^{-1}$, $\Phi\Phi^+ = I_M$, and $\Phi^+\Phi = P_{\mathcal{R}}$ (Chapters 1–3).
   - Exact expectation $\mathbb{E}[\Phi^+\Phi] = \frac{M}{N}I_N$ and variance $\mathbb{E}\|\frac{N}{M}\Phi^+\Phi x - x\|_2^2 = \left(\frac{N}{M}-1\right)\|x\|_2^2$ for both Gaussian and full-rank Rademacher matrices (Theorems 3.3, 3.4, and Section 3.7).
-  - Null Space Property (Theorem 4.2), RIP bound $M \gtrsim C k \log(N/k)$ (Theorem 4.3), Donoho–Tanner phase transition $\rho_W(0.25) \approx 0.241$ (Section 4.7), and Candès–Romberg–Tao stability bound (Theorem 4.4).
+  - Null Space Property (Theorem 4.2), RIP bound $M \gtrsim C k \log(N/k)$ (Theorem 4.3), Donoho–Tanner phase transition $\rho_W(0.25) \approx 0.267$ (Section 4.7), and Candès–Romberg–Tao stability bound (Theorem 4.4).
   - Derivation of soft-thresholding $\mathcal{S}_{\alpha\lambda}$ as $\text{prox}_{\alpha\lambda\|\cdot\|_1}$, $\lambda_{\max} = \|\Phi^T y\|_\infty$, and $O(1/k)$ vs. $O(1/k^2)$ convergence of ISTA/FISTA (Chapter 5).
 - **Practical Engineering Heuristics & Domain Modeling:**
   - Modeling neural network gradient blocks as dense Gaussian or heavy-tailed Laplace vectors to estimate $k_{\text{eff}} \in [512, 652]$ at $N = 1024$ (Section 6.6).

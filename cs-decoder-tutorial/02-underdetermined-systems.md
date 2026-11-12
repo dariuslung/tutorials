@@ -156,12 +156,12 @@ Once again, $\ell_1$ recovery finds the exact 1-sparse vector $[0, 0, 3]^T$, whi
 
 ### Step 4: Now Flip the Script — What if $x$ Was Actually Dense?
 Suppose the true gradient block in Example 2 was **not** sparse, but rather the dense vector:
-$$x_{\text{dense}} = \begin{bmatrix} 1.1 \\ 0.9 \\ 2.0 \end{bmatrix}$$
+$$x_{\text{dense}} = \begin{bmatrix} 1.1 \\ 0.9 \\ 1.9 \end{bmatrix}$$
 Wait: what is its measurement $y = \Phi x_{\text{dense}}$?
-$$y = \begin{bmatrix} 1.1 + 2.0 \\ 0.9 + 2.0 \end{bmatrix} = \begin{bmatrix} 3.1 \\ 2.9 \end{bmatrix} \approx \begin{bmatrix} 3 \\ 3 \end{bmatrix}$$
-From $y = [3.1, 2.9]^T$:
-- The **pseudo-inverse** $\Phi^+ y$ outputs $[1.067, 0.867, 2.033]^T$, which is **extremely close** to the true dense vector $[1.1, 0.9, 2.0]^T$ (squared error $\| \hat{x}_{\text{raw}} - x_{\text{dense}} \|_2^2 = 0.0033$).
-- The **$\ell_1$ decoder** outputs $[0.2, 0.0, 2.9]^T$, halluncinating a sparse vector near a coordinate axis and incurring a **250$\times$ larger squared error** ($\|\hat{x}_{\ell_1} - x_{\text{dense}}\|_2^2 = 0.81 + 0.81 + 0.81 = 2.43$)!
+$$y = \begin{bmatrix} 1.1 + 1.9 \\ 0.9 + 1.9 \end{bmatrix} = \begin{bmatrix} 3.0 \\ 2.8 \end{bmatrix} \approx \begin{bmatrix} 3 \\ 3 \end{bmatrix}$$
+From $y = [3.0, 2.8]^T$:
+- The **pseudo-inverse** $\Phi^+ y$ outputs $[1.067, 0.867, 1.933]^T$, which is **extremely close** to the true dense vector $[1.1, 0.9, 1.9]^T$ (squared error $\|\hat{x}_{\text{raw}} - x_{\text{dense}}\|_2^2 = \frac{1}{300} \approx 0.0033$).
+- The **$\ell_1$ decoder** outputs $[0.2, 0.0, 2.8]^T$, hallucinating a sparse vector near a coordinate axis and incurring a **$729\times$ larger squared error** ($\|\hat{x}_{\ell_1} - x_{\text{dense}}\|_2^2 = 0.81 + 0.81 + 0.81 = 2.43$)!
 
 > **The Fundamental Moral of Chapter 2:**
 > $\ell_1$ recovery is not magic—it is a strong **inductive bias** toward the coordinate axes. When the true vector $x$ actually lives near a coordinate axis (sparse), $\ell_1$ wins dramatically. When the true vector $x$ points into the middle of the space (dense), forcing the solution onto a coordinate axis introduces catastrophic reconstruction error!
@@ -200,6 +200,17 @@ print("\nExample 2 (N=3, M=2) with SPARSE x:")
 print(f"  True x      = {x2_sparse}")
 print(f"  Phi^+ y     = {x2_pinv}")
 print(f"  L1 recovery = {x2_l1}")
+
+# Step 4: Dense x = [1.1, 0.9, 1.9]^T
+x2_dense = np.array([1.1, 0.9, 1.9])
+y2_d = Phi2 @ x2_dense
+x2_d_pinv = np.linalg.pinv(Phi2) @ y2_d
+z_line_d = np.stack([ts, ts - 0.2, 3.0 - ts], axis=1)
+x2_d_l1 = z_line_d[np.argmin(np.sum(np.abs(z_line_d), axis=1))]
+print("\nExample 2 (N=3, M=2) with DENSE x:")
+print(f"  True x      = {x2_dense}")
+print(f"  Phi^+ y     = {np.round(x2_d_pinv, 4)} (sq err = {np.sum((x2_d_pinv - x2_dense)**2):.4f})")
+print(f"  L1 recovery = {np.round(x2_d_l1, 4)} (sq err = {np.sum((x2_d_l1 - x2_dense)**2):.4f})")
 ```
 
 ---

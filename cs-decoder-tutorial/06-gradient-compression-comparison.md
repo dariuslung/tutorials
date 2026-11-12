@@ -17,8 +17,8 @@ We now bring together every mathematical result from Chapters 1–5 to explain t
 | **Mathematical Prior** | Minimum $\ell_2$ energy ($\hat{x} \in \text{row}(\Phi)$) | Isotropic unbiased estimator of $x$ | Coordinate sparsity ($\hat{x}$ near axes) |
 | **Linearity** | **Linear** ($\mathcal{D}(\bar{y}) = \overline{\mathcal{D}(y)}$) | **Linear** ($\mathcal{D}(\bar{y}) = \overline{\mathcal{D}(y)}$) | **Nonlinear** ($\mathcal{D}(\bar{y}) \neq \overline{\mathcal{D}(y)}$) |
 | **Expectation $\mathbb{E}[\hat{x}]$ (random $\Phi$)** | $\frac{M}{N} x = r x$ (shrunk by $r$) | **$x$ (Unbiased!)** | Biased toward $0$ (by $\lambda$) and toward axes |
-| **Expected MSE $\mathbb{E}\|\hat{x} - x\|_2^2$** | $\left(1 - \frac{M}{N}\right)\|x\|_2^2 = 0.75\|x\|_2^2$ | $\left(\frac{N}{M} - 1\right)\|x\|_2^2 = 3.0\|x\|_2^2$ | $\approx 0$ if $\|x\|_0 \le 62$; $\gg \|x\|_2^2$ if $x$ is dense |
-| **Cosine Similarity $\cos(\hat{x}, x)$** | $\approx \sqrt{r} = 0.50$ | $\approx \sqrt{r} = 0.50$ (identical direction!) | $\approx 1.0$ if $\|x\|_0 \le 62$; **$< 0.38$** on dense $x$! |
+| **Expected MSE $\mathbb{E}\|\hat{x} - x\|_2^2$** | $\left(1 - \frac{M}{N}\right)\|x\|_2^2 = 0.75\|x\|_2^2$ | $\left(\frac{N}{M} - 1\right)\|x\|_2^2 = 3.0\|x\|_2^2$ | $\approx 0$ if $\|x\|_0 \le 68$; $\gg \|x\|_2^2$ if $x$ is dense |
+| **Cosine Similarity $\cos(\hat{x}, x)$** | $\approx \sqrt{r} = 0.50$ | $\approx \sqrt{r} = 0.50$ (identical direction!) | $\approx 1.0$ if $\|x\|_0 \le 68$; **$\approx 0.32\text{–}0.42$ ($< 0.50$)** on dense $x$! |
 | **Decode Compute Cost** | $1$ GEMV ($2MN$ FLOPs) | $1$ GEMV ($2MN$ FLOPs) | $2T$ GEMVs ($4TMN$ FLOPs, $100\times$ slower at $T=50$) |
 | **When It Wins** | Single-shot MSE on dense vectors when norm underestimation is acceptable | **Distributed SGD on dense/heavy-tailed neural network gradients** | Strictly sparse signals with $\|x\|_0 < 0.24 M$ and single-sender decoding |
 
@@ -80,7 +80,7 @@ What does this mean geometrically?
    Training with a fixed projection matrix $P_{\mathcal{R}}$ per block is mathematically equivalent to **subspace training** (restricting each $1024$-parameter block to a random $256$-dimensional linear subspace). Overparameterized neural networks can still train surprisingly well in a random $256/1024$ subspace because their intrinsic dimension is often much smaller than $N$, **provided the pseudo-inverse decoder stays inside $\text{row}(\Phi)$ consistently**.
 3. **Why $\frac{N}{M}$ Rescaling Behavior Differs for Fixed $\Phi$ vs. Per-Step $\Phi_t$:**
    - Along the active subspace $\text{row}(\Phi)$, $P_{\mathcal{R}}$ acts as the **identity** ($P_{\mathcal{R}}^2 = P_{\mathcal{R}}$)!
-   -Wait: look closely at that! If $\Phi$ is **fixed** across steps, then once the trajectory is moving inside $\text{row}(\Phi)$, the operator $P_{\mathcal{R}}$ has eigenvalue **$1$** (not $M/N$) for vectors $v \in \text{row}(\Phi)$, and eigenvalue **$0$** for vectors $v \in \text{null}(\Phi)$.
+   - Wait: look closely at that! If $\Phi$ is **fixed** across steps, then once the trajectory is moving inside $\text{row}(\Phi)$, the operator $P_{\mathcal{R}}$ has eigenvalue **$1$** (not $M/N$) for vectors $v \in \text{row}(\Phi)$, and eigenvalue **$0$** for vectors $v \in \text{null}(\Phi)$.
    - At step $t$, if the true gradient $g_t$ is still roughly isotropic relative to the fixed random subspace $\text{row}(\Phi)$ (because the forward/backward pass mixes coordinates across blocks and non-linear activations), then $\|P_{\mathcal{R}} g_t\|_2^2 \approx \frac{M}{N}\|g_t\|_2^2$, so the component of $\hat{g}_{\text{raw}} = P_{\mathcal{R}} g_t$ along $g_t$ is still $\frac{M}{N} = 0.25$ of $g_t$, and rescaling by $\frac{N}{M}$ still restores unbiasedness relative to the random draw of $\Phi$. However, along any fixed direction inside $\text{row}(\Phi)$, $\frac{N}{M} P_{\mathcal{R}}$ scales steps by $\frac{N}{M} = 4$ without averaging out over time!
 
 ---
@@ -102,10 +102,10 @@ Even for a single soft-thresholding step with $\tau = 1.0$:
 ### Reason 2: Support Union Density Blowup ($\|\bar{g}\|_0 \le \sum_{i=1}^W \|g_i\|_0$)
 Wait: you might ask, *"Even if $\mathcal{D}_{\ell_1}(\bar{y}) \neq \frac{1}{W}\sum_i \mathcal{D}_{\ell_1}(y_i)$, since $\bar{y} = \Phi \bar{g}$, doesn't $\mathcal{D}_{\ell_1}(\bar{y})$ directly try to recover the true averaged gradient $\bar{g}$?"*
 **Yes—and that is even worse for sparsity!**
-Suppose each individual worker $i \in \{1, \dots, W\}$ actually *did* have a sparse local gradient block $g_i$ with $\|g_i\|_0 = k = 30$ non-zeros (which is below the Donoho–Tanner limit $k_{\max} = 62$ for a single worker!).
+Suppose each individual worker $i \in \{1, \dots, W\}$ actually *did* have a sparse local gradient block $g_i$ with $\|g_i\|_0 = k = 30$ non-zeros (which is below the Donoho–Tanner limit $k_{\max} \approx 68$ for a single worker!).
 Because different workers process different minibatches of data, their active gradient coordinates occur at different indices $S_i = \text{supp}(g_i)$. When AllReduce forms the average $\bar{g} = \frac{1}{W}\sum_{i=1}^W g_i$, the support of $\bar{g}$ is the **union of the supports** of all $W$ workers:
 $$\text{supp}(\bar{g}) = \bigcup_{i=1}^W \text{supp}(g_i) \implies \|\bar{g}\|_0 \approx \min\big(W k, \, N\big)$$
-With $W = 8$ workers each having $k = 30$ active coordinates, the averaged gradient $\bar{g}$ has $\|\bar{g}\|_0 \approx 215 \gg k_{\max} = 62$ non-zeros! Thus, **averaging measurements in AllReduce destroys sparsity before the $\ell_1$ decoder ever sees the signal**, pushing $\bar{g}$ far above the Donoho–Tanner phase transition!
+With $W = 8$ workers each having $k = 30$ active coordinates, the averaged gradient $\bar{g}$ has $\|\bar{g}\|_0 \approx 217 \gg k_{\max} \approx 68$ non-zeros! Thus, **averaging measurements in AllReduce destroys sparsity before the $\ell_1$ decoder ever sees the signal**, pushing $\bar{g}$ far above the Donoho–Tanner phase transition!
 
 ---
 
@@ -157,18 +157,18 @@ The standard fix for biased compressors is **Error Feedback (EF / memory)** (Sei
 
 Why did $\ell_1$ via FISTA lose to the pseudo-inverse at $r = 0.25$ ($N = 1024, M = 256$) on real neural network gradient blocks? Let us put the exact numbers side by side:
 
-1. **The Donoho–Tanner Threshold Demands $\|x\|_0 \le 62$ (Effective Sparsity Ratio $k_{\text{eff}} \le 62$):**
-   From Section 4.7, at $N = 1024, M = 256$ ($r = 0.25$), $\ell_1$ recovery requires the signal energy to be concentrated in at most **$k_{\max} \approx 62$ coordinates ($6\%$ of the block)**.
+1. **The Donoho–Tanner Threshold Demands $\|x\|_0 \le 68$ (Effective Sparsity Ratio $k_{\text{eff}} \le 68$):**
+   From Section 4.7, at $N = 1024, M = 256$ ($r = 0.25$), $\ell_1$ recovery requires the signal energy to be concentrated in at most **$k_{\max} \approx 68$ coordinates ($6.7\%$ of the block)**.
 2. **What Real Deep Learning Gradient Blocks Look Like:**
    Empirically, within a $1024$-element block of a convolutional, MLP, or Transformer weight gradient, the entries are modeled by a **generalized Gaussian or heavy-tailed Weibull/Student-$t$ distribution** (or near-Gaussian distribution after layer normalization):
    - **Gaussian block ($x_j \sim \mathcal{N}(0, \sigma^2)$):**
-     - Effective sparsity ratio: $k_{\text{eff}}(x) = \frac{\|x\|_1^2}{\|x\|_2^2} \approx \frac{2}{\pi} N \approx \mathbf{652}$ (over **$10\times$ larger** than the Donoho–Tanner limit of $62$!).
-     - Top-$62$ energy fraction: The largest $62$ out of $1024$ Gaussian entries contain only **$\approx 27\%$ of the squared $\ell_2$ norm $\|x\|_2^2$** and only **$\approx 14\%$ of the $\ell_1$ norm $\|x\|_1$**! The remaining **$86\%$ of the $\ell_1$ norm sits in the $962$ tail coordinates** ($\sigma_{62}(x)_1 = 0.86 \|x\|_1$).
+     - Effective sparsity ratio: $k_{\text{eff}}(x) = \frac{\|x\|_1^2}{\|x\|_2^2} \approx \frac{2}{\pi} N \approx \mathbf{652}$ (nearly **$10\times$ larger** than the Donoho–Tanner limit of $68$!).
+     - Top-$68$ energy fraction: The largest $68$ out of $1024$ Gaussian entries contain only **$\approx 33.7\%$ of the squared $\ell_2$ norm $\|x\|_2^2$** and only **$\approx 18.5\%$ of the $\ell_1$ norm $\|x\|_1$**! The remaining **$81.5\%$ of the $\ell_1$ norm sits in the $956$ tail coordinates** ($\sigma_{68}(x)_1 \approx 0.815 \|x\|_1$).
    - **Laplace / Heavy-Tailed block ($x_j \sim \text{Laplace}(0, b)$, commonly observed in late-training gradients):**
-     - Effective sparsity ratio: $k_{\text{eff}}(x) = \frac{\|x\|_1^2}{\|x\|_2^2} \approx \frac{1}{2} N = \mathbf{512}$ (**$8.2\times$ larger** than the limit of $62$!).
-     - Top-$62$ energy fraction: Even for a heavy-tailed Laplace distribution, the top $62$ coordinates hold only **$\approx 49\%$ of $\|x\|_2^2$** and **$\approx 23\%$ of $\|x\|_1$** ($77\%$ of the $\ell_1$ norm is in the tail!).
+     - Effective sparsity ratio: $k_{\text{eff}}(x) = \frac{\|x\|_1^2}{\|x\|_2^2} \approx \frac{1}{2} N = \mathbf{512}$ (**$7.5\times$ larger** than the limit of $68$!).
+     - Top-$68$ energy fraction: Even for a heavy-tailed Laplace distribution, the top $68$ coordinates hold only **$\approx 48.9\%$ of $\|x\|_2^2$** and **$\approx 24.6\%$ of $\|x\|_1$** ($75.4\%$ of the $\ell_1$ norm is in the tail!).
 3. **What Happens When FISTA Runs on Such a Block at $r = 0.25$:**
-   - **If $\lambda$ is small (Basis Pursuit regime):** FISTA finds the point on $\mathcal{H}_y = \{z : \Phi z = y\}$ with minimum $\|z\|_1$. By high-dimensional geometry, a generic $768$-dimensional affine flat $\mathcal{H}_y$ intersects the $\ell_1$ ball at a face of dimension **$\le M = 256$**! That means Basis Pursuit **forces at least $N - M = 768$ coordinates of $\hat{x}_{\ell_1}$ to be exact zero**, cramming all the energy of a $1024$-coordinate dense gradient into at most $256$ coordinates and amplifying null-space noise. The resulting cosine similarity with the true gradient $x$ drops to **$\cos(\hat{x}_{\ell_1}, x) \approx 0.37$**, strictly worse than the pseudo-inverse's guaranteed **$\cos(\hat{x}_{\text{pinv}}, x) = \sqrt{M/N} = 0.50$**!
+   - **If $\lambda$ is small (Basis Pursuit regime):** FISTA finds the point on $\mathcal{H}_y = \{z : \Phi z = y\}$ with minimum $\|z\|_1$. By linear programming geometry, a generic $768$-dimensional affine flat $\mathcal{H}_y$ intersects the $\ell_1$ ball at a face of dimension **$< M = 256$** (supported on at most $M = 256$ coordinates)! That means Basis Pursuit **forces at least $N - M = 768$ coordinates of $\hat{x}_{\ell_1}$ to be exact zero**, cramming all the energy of a $1024$-coordinate dense gradient into at most $256$ coordinates and amplifying null-space noise. The resulting cosine similarity with the true gradient $x$ drops to **$\cos(\hat{x}_{\ell_1}, x) \approx 0.40$**, strictly worse than the pseudo-inverse's guaranteed **$\cos(\hat{x}_{\text{pinv}}, x) = \sqrt{M/N} = 0.50$**!
    - **If $\lambda$ is larger (LASSO shrinkage regime):** Soft thresholding zeroes out even more coordinates and shrinks the survivors toward zero, introducing massive norm bias while still failing to improve directional cosine similarity above $\sqrt{M/N} = 0.50$.
 
 ---
@@ -191,7 +191,7 @@ Phi_pinv = Phi.T @ np.linalg.inv(Phi @ Phi.T)
 L = np.linalg.norm(Phi, ord=2) ** 2
 alpha = 1.0 / L
 
-def fista_decode(Phi, y, eta_lam=0.05, max_iter=60):
+def fista_decode(Phi, y, alpha, eta_lam=0.05, max_iter=60):
     lam = eta_lam * np.max(np.abs(Phi.T @ y))
     tau = alpha * lam
     z = np.zeros(Phi.shape[1])
@@ -206,10 +206,10 @@ def fista_decode(Phi, y, eta_lam=0.05, max_iter=60):
     return z
 
 def make_signals(N, rng):
-    # 1. Strictly sparse (k = 32 < k_max = 62)
+    # 1. Strictly sparse (k = 32 < k_max = 68)
     x_k32 = np.zeros(N)
     x_k32[rng.choice(N, 32, replace=False)] = rng.standard_normal(32)
-    # 2. Above phase transition (k = 128 > k_max = 62)
+    # 2. Above phase transition (k = 128 > k_max = 68)
     x_k128 = np.zeros(N)
     x_k128[rng.choice(N, 128, replace=False)] = rng.standard_normal(128)
     # 3. Heavy-tailed Laplace gradient block
@@ -217,8 +217,8 @@ def make_signals(N, rng):
     # 4. Dense Gaussian gradient block
     x_gauss = rng.standard_normal(N)
     return [
-        ("Sparse (k=32 < k_max=62)", x_k32),
-        ("Sparse (k=128 > k_max=62)", x_k128),
+        ("Sparse (k=32 < k_max=68)", x_k32),
+        ("Sparse (k=128 > k_max=68)", x_k128),
         ("Heavy-Tailed Laplace Block", x_lap),
         ("Dense Gaussian Block", x_gauss),
     ]
@@ -228,19 +228,19 @@ def cosine_sim(a, b):
     return np.dot(a, b) / (na * nb) if na > 0 and nb > 0 else 0.0
 
 print(f"=== Head-to-Head Decoder Benchmark at N={N}, M={M} (r={r}) ===\n")
-print(f"{'Signal Type':<27} | {'k_eff':>6} | {'Top62 L2%':>9} | {'Pinv Cos':>8} | {'FISTA(BP) Cos':>13} | {'FISTA(LASSO) Cos':>16} | {'RawPinv MSE':>11} | {'FISTA(BP) MSE':>13}")
+print(f"{'Signal Type':<27} | {'k_eff':>6} | {'Top68 L2%':>9} | {'Pinv Cos':>8} | {'FISTA(BP) Cos':>13} | {'FISTA(LASSO) Cos':>16} | {'RawPinv MSE':>11} | {'FISTA(BP) MSE':>13}")
 print("-" * 122)
 
 for name, x in make_signals(N, rng):
     k_eff = (np.sum(np.abs(x)) ** 2) / np.sum(x ** 2)
-    top62_idx = np.argsort(np.abs(x))[-62:]
-    top62_l2_pct = 100.0 * np.sum(x[top62_idx] ** 2) / np.sum(x ** 2)
+    top68_idx = np.argsort(np.abs(x))[-68:]
+    top68_l2_pct = 100.0 * np.sum(x[top68_idx] ** 2) / np.sum(x ** 2)
 
     y = Phi @ x
     x_raw = Phi_pinv @ y
     x_pinv = scale * x_raw
-    x_fista_bp = fista_decode(Phi, y, eta_lam=0.005, max_iter=100)
-    x_fista_lasso = fista_decode(Phi, y, eta_lam=0.10, max_iter=100)
+    x_fista_bp = fista_decode(Phi, y, alpha, eta_lam=0.005, max_iter=100)
+    x_fista_lasso = fista_decode(Phi, y, alpha, eta_lam=0.10, max_iter=100)
 
     cos_pinv = cosine_sim(x_pinv, x)
     cos_bp = cosine_sim(x_fista_bp, x)
@@ -248,7 +248,7 @@ for name, x in make_signals(N, rng):
     mse_raw = np.sum((x_raw - x) ** 2) / np.sum(x ** 2)
     mse_bp = np.sum((x_fista_bp - x) ** 2) / np.sum(x ** 2)
 
-    print(f"{name:<27} | {k_eff:6.1f} | {top62_l2_pct:8.1f}% | {cos_pinv:8.4f} | {cos_bp:13.4f} | {cos_lasso:16.4f} | {mse_raw:11.4f} | {mse_bp:13.4f}")
+    print(f"{name:<27} | {k_eff:6.1f} | {top68_l2_pct:8.1f}% | {cos_pinv:8.4f} | {cos_bp:13.4f} | {cos_lasso:16.4f} | {mse_raw:11.4f} | {mse_bp:13.4f}")
 ```
 
 ---
