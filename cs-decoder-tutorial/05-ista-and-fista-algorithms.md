@@ -71,19 +71,7 @@ u_j - \tau & \text{if } u_j > \tau \\
 u_j + \tau & \text{if } u_j < -\tau
 \end{cases} = \text{sign}(u_j) \max\big(|u_j| - \tau, \, 0\big)$$
 
-```
-         Soft-Thresholding S_τ(u_j) vs. Identity u_j:
-
-                  S_τ(u_j)
-                     ^              /  slope = 1 (shifted down by τ)
-                     |             /
-                     |            /
-         ------------+-----0-----+------------> u_j
-                    -τ    /      τ
-                         /  <-- Deadzone [-τ, +τ]:
-                        /       Every value in [-τ, +τ] is set to EXACT ZERO!
-                       /        Every value outside is shrunk toward 0 by τ!
-```
+![Soft-Thresholding Proximal Operator S_tau(u_j) vs Identity](./figures/ch5_soft_thresholding.svg)
 
 This reveals **two critical facts** about ISTA/FISTA:
 1. **Why ISTA/FISTA produces exact zeros:** Unlike gradient descent on smooth penalties, any coordinate entering the deadzone $[-\tau, +\tau]$ is snapped to **exact floating-point zero** in a single step.
@@ -271,6 +259,10 @@ for it in range(1, max_iters + 1):
         err_fista = np.linalg.norm(z_fista - x_true) / np.linalg.norm(x_true)
         print(f"{it:8d} | {gap_ista:14.4e} | {gap_fista:14.4e} | {err_ista:19.4f} | {err_fista:20.4f}")
 ```
+
+![ISTA vs FISTA Objective Convergence and Signal Recovery Trajectory](./figures/ch5_ista_vs_fista.svg)
+
+*Empirical convergence at $(N = 1024, M = 256, k = 32, \lambda = 0.02\lambda_{\max})$: **(a)** FISTA achieves $O(1/k^2)$ convergence (hitting gap $1.04 \times 10^{-2}$ by iteration 50 vs. ISTA's $0.721$). **(b)** Recovery error approaches the LASSO shrinkage floor ($\approx 0.088$), exhibiting slight non-monotone momentum ripples around iteration 50 (see Question 3 below).*
 
 ---
 

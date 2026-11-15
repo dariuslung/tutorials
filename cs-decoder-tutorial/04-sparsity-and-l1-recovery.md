@@ -65,22 +65,7 @@ Consider solving **Basis Pursuit (BP)**:
 $$(\text{BP}) \qquad \hat{x}_{\text{BP}} = \arg\min_{z \in \mathbb{R}^N} \|z\|_1 \quad \text{subject to} \quad \Phi z = y$$
 Geometrically, imagine blowing up an $\ell_1$ diamond $B_1(R) = \{z : \|z\|_1 \le R\}$ starting from radius $R = 0$ at the origin until it first touches the affine solution space $\mathcal{H}_y = x + \text{null}(\Phi)$:
 
-```
-           Compare L2 Sphere (Pseudo-Inverse) vs. L1 Diamond (Basis Pursuit) in R^2:
-
-        z_2                                             z_2
-         ^      \ H_y: Φz = y                            ^      \ H_y: Φz = y
-         |       \                                       |       \
-         |     ..-* x_raw = Φ⁺y                          |        * x = [0, 3]^T (Corner!)
-         |   .'    \  '.                                 |       /|\
-         |  /       \   \                                |     /  |  \  L1 Diamond
-      ---+-----------+---+---> z_1                    ---+----+---+----+---> z_1
-         |  \           /\                               |     \  |  /  |z_1|+|z_2| <= 3
-         |   '.       .'  \                              |       \|/
-         |     '-----'     \                             |        '
-     L2 Ball touches H_y in the                     L1 Diamond touches H_y right at
-     dense interior (perpendicular)!                the sparse axis corner [0, 3]^T!
-```
+![Pseudo-Inverse Expanding L2 Sphere vs Basis Pursuit Expanding L1 Diamond](./figures/ch4_l2_vs_l1_geometry.svg)
 
 When does the $\ell_1$ diamond fail to touch $\mathcal{H}_y$ at the true sparse point $x$? Only if the affine flat $\mathcal{H}_y = x + \text{null}(\Phi)$ is tilted at a steep enough angle that it **slices into the interior** of the $\ell_1$ ball $\{z : \|z\|_1 \le \|x\|_1\}$. That geometric condition leads directly to the **Null Space Property** in Section 4.5!
 
@@ -279,6 +264,10 @@ for k in [4, 8, 12, 15, 18, 24, 32, 64]:
 
     print(f"{k:10d} | {k/M:7.3f} | {np.mean(l1_errs):14.4f} | {np.mean(pinv_errs):15.4f} | {100*successes/trials:14.0f}%")
 ```
+
+![Donoho-Tanner Phase Diagram and Empirical Recovery Cliff at r = 0.25](./figures/ch4_donoho_tanner_phase_transition.svg)
+
+*Donoho–Tanner phase transition: **(a)** Theoretical weak phase transition $\rho_W(\delta)$ across compression ratios $\delta = M/N$, with the operating point $r = 0.25$ ($\rho_W \approx 0.267$, $k_{\max} \approx 68$ at $N = 1024$) marked. **(b)–(c)** Empirical Basis Pursuit recovery rate and relative $\ell_2$ error ($N = 256, M = 64$, averaged over 100 random trials per $k$), showing the sharp transition from exact recovery to failure relative to the raw pseudo-inverse error $\approx \sqrt{1-r} = 0.866$.*
 
 ---
 

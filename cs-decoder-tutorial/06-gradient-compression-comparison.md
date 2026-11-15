@@ -251,6 +251,10 @@ for name, x in make_signals(N, rng):
     print(f"{name:<27} | {k_eff:6.1f} | {top68_l2_pct:8.1f}% | {cos_pinv:8.4f} | {cos_bp:13.4f} | {cos_lasso:16.4f} | {mse_raw:11.4f} | {mse_bp:13.4f}")
 ```
 
+![Head-to-Head Decoder Benchmark Across Sparse, Laplace, and Gaussian Signals](./figures/ch6_decoder_benchmark.svg)
+
+*Head-to-head benchmark at $(N = 1024, M = 256, r = 0.25)$: **(a)** Dense Laplace and Gaussian blocks have effective sparsity $k_{\text{eff}} \gg k_{\max} \approx 68$. **(b)–(c)** Once signals fall outside the sparse regime, $\ell_1$ decoding via FISTA loses to the pseudo-inverse in both cosine similarity (dropping below $\sqrt{r} = 0.50$) and single-block relative MSE (rising above $1 - r = 0.75$).*
+
 ---
 
 ## 6.8 Check Your Understanding

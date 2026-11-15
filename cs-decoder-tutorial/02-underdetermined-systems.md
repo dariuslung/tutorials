@@ -35,22 +35,7 @@ Writing $h = z - x \in \text{null}(\Phi)$ gives $z = x + h$. Finally, since $x =
 
 Let us visualize the decomposition of $\mathbb{R}^N$ using the orthogonal subspaces $\text{row}(\Phi)$ and $\text{null}(\Phi)$ from Section 1.2:
 
-```
-                      null(Φ)  (dimension N - M = 768)
-                         ^
-                         |          * x = x_R + x_N  (True gradient block)
-                         |          |
-                         |          |  <-- Affine solution space H_y = x_R + null(Φ)
-                         |          |      (Every point z on this vertical flat satisfies Φz = y!)
-                         |          |
-      -------------------+----------+-------------------> row(Φ) (dimension M = 256)
-                        0|         x_R = Φ⁺ y
-                         |     (Minimum L2-norm solution:
-                         |      closest point on H_y to origin 0)
-                         |
-                         |          o x_L1 (Minimum L1-norm solution:
-                         |          |       point where H_y crosses a coordinate axis!)
-```
+![Orthogonal Subspace Geometry of Underdetermined Linear Measurements](./figures/ch2_subspace_geometry.svg)
 
 Look closely at what this geometry tells us:
 1. **The True Signal $x$:** Sits at some height $x_{\mathcal{N}}$ along the vertical $\text{null}(\Phi)$ axis and at horizontal position $x_{\mathcal{R}}$ along the $\text{row}(\Phi)$ axis.
@@ -165,6 +150,10 @@ From $y = [3.0, 2.8]^T$:
 
 > **The Fundamental Moral of Chapter 2:**
 > $\ell_1$ recovery is not magic—it is a strong **inductive bias** toward the coordinate axes. When the true vector $x$ actually lives near a coordinate axis (sparse), $\ell_1$ wins dramatically. When the true vector $x$ points into the middle of the space (dense), forcing the solution onto a coordinate axis introduces catastrophic reconstruction error!
+
+![Hand-Worked Examples 1 and 2: Geometry and Sparse-vs-Dense Reversal](./figures/ch2_worked_examples.svg)
+
+*Visualizing Examples 1 and 2: **(a)** In $\mathbb{R}^2$, $\Phi^+ y$ meets $\mathcal{H}_y$ perpendicularly along $\text{row}(\Phi)$ while the $\ell_1$ diamond touches the sparse corner $x = [0, 3]^T$. **(b)** Along $\mathcal{H}_y$ in $\mathbb{R}^3$, $\|z(t)\|_1$ attains its minimum at the sparse kink $t = 0$. **(c)** For a dense vector ($t = 1.1$), $\Phi^+ y$ ($t = 1.067$) stays right beside $x_{\text{dense}}$, whereas $\ell_1$ snaps to the coordinate kink $t = 0.2$ and suffers $729\times$ higher squared error.*
 
 ---
 
