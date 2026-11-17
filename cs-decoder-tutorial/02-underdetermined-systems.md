@@ -117,7 +117,7 @@ A vector $z = [z_1, z_2, z_3]^T \in \mathbb{R}^3$ satisfies $\Phi z = y$ if and 
 $$\begin{cases} z_1 + z_3 = 3 \implies z_1 = 3 - z_3 \\ z_2 + z_3 = 3 \implies z_2 = 3 - z_3 \end{cases}$$
 Let $t = 3 - z_3 \in \mathbb{R}$ (so $z_3 = 3 - t$). Then every solution $z \in \mathcal{H}_y$ lies on the 1D line:
 $$z(t) = \begin{bmatrix} t \\ t \\ 3 - t \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \\ 3 \end{bmatrix} + t \begin{bmatrix} 1 \\ 1 \\ -1 \end{bmatrix}, \quad t \in \mathbb{R}$$
-Here, $\text{null}(\Phi) = \text{span}\left(\begin{bmatrix} 1 & 1 & -1 \end{bmatrix}^T\right)$ has dimension $N - M = 3 - 2 = 1$.
+Here, $\text{null}(\Phi) = \text{span}\left(\begin{bmatrix} 1 & 1 & -1 \end{bmatrix}^T\right)$ has dimension $N - M = 3 - 2 = 1$. (The **span** of some vectors is the set of all their linear combinations $c_1 v_1 + \dots + c_m v_m$; here one generator gives the line $\{c\,[1,1,-1]^T : c \in \mathbb{R}\}$ through the origin.)
 
 ### Step 2: Minimum $\ell_2$-Norm (Pseudo-Inverse) Solution
 We minimize $\|z(t)\|_2^2$ over $t \in \mathbb{R}$:
