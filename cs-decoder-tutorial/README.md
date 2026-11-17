@@ -24,7 +24,7 @@ Every mathematical concept, derivation, and numerical experiment in this tutoria
      Without the $\frac{N}{M}$ factor, $\hat{x}_{\text{raw}} = \Phi^+ \Phi x$ shrinks the component along the true gradient direction $x$ to $\frac{M}{N} = r$ of its original length in expectation. With the $\frac{N}{M}$ rescaling, the estimator is **unbiased** ($\mathbb{E}[\hat{x}_{\text{pinv}}] = x$) and injects isotropic zero-mean variance of exactly $\left(\frac{N}{M} - 1\right)\|x\|_2^2$ (for rotationally invariant $\Phi$).
    - **Decoder 2: $\ell_1$ Regularized Recovery via ISTA/FISTA:**
      $$\hat{x}_{\ell_1} = \arg\min_{z \in \mathbb{R}^N} \frac{1}{2}\|\Phi z - y\|_2^2 + \lambda \|z\|_1$$
-     Tested as a sparsity-exploiting alternative, $\ell_1$ decoding via FISTA **loses to the rescaled pseudo-inverse at $r = 0.25$ on real neural network gradient blocks**. By the end of this tutorial, you will be able to prove mathematically and verify empirically why this happens (from three independent angles: violation of the Donoho–Tanner sparsity threshold on dense/heavy-tailed gradients, irreducible $\ell_1$ shrinkage bias without error feedback, and structural incompatibility of nonlinear decoding with multi-worker measurement averaging).
+     A sparsity-exploiting alternative. Whether it beats the pseudo-inverse at $r = 0.25$ on real gradient blocks is the question Chapters 4–6 answer.
 
 ---
 
@@ -70,19 +70,12 @@ Every mathematical concept, derivation, and numerical experiment in this tutoria
 
 ## 3. Chapter Map
 
-Each chapter builds directly on the previous ones, includes runnable NumPy verification scripts, and ends with check-your-understanding questions (with full step-by-step solutions in Chapter 99):
+Chapters build on one another; each ends with check-your-understanding problems, solved in Chapter 99.
 
-- **[Chapter 1: Prerequisites](./01-prerequisites.md)**
-  Vectors and norms ($\ell_0, \ell_1, \ell_2$ and their inequalities), matrices as linear maps, rank, the Four Fundamental Subspaces (specifically $\text{row}(\Phi)$ and $\text{null}(\Phi)$), orthogonal projections, the Singular Value Decomposition (SVD), least squares, expectation/covariance/trace tricks for random vectors, Gaussian and Rademacher random matrices (Marchenko–Pastur law), convex functions, Lipschitz-smooth gradient descent, and proximal operators.
-- **[Chapter 2: The Basic Problem — Underdetermined Linear Systems](./02-underdetermined-systems.md)**
-  Why $y = \Phi x$ with $M < N$ has an $(N-M)$-dimensional affine subspace of solutions $x + \text{null}(\Phi)$; the geometric picture of slicing $\mathbb{R}^N$ with hyperplanes; complete hand-worked numerical examples for $(N=2, M=1)$ and $(N=3, M=2)$.
-- **[Chapter 3: The Pseudo-Inverse Decoder, Completely](./03-pseudo-inverse-decoder.md)**
-  Definition via SVD; explicit formula $\Phi^+ = \Phi^T(\Phi\Phi^T)^{-1}$ for full row rank; why $\Phi\Phi^+ = I_M$ while $\Phi^+\Phi = P_{\mathcal{R}}$ is a rank-$M$ orthogonal projector; proof of the minimum-$\ell_2$-norm property; exact derivation of $\mathbb{E}[\Phi^+\Phi] = \frac{M}{N}I_N$ via orthogonal invariance; exact derivation of the variance $\mathbb{E}\|\frac{N}{M}\Phi^+\Phi x - x\|_2^2 = \left(\frac{N}{M}-1\right)\|x\|_2^2$; Gaussian vs. Rademacher (what changes and why $N=1024$ makes them virtually identical); AllReduce commutativity; computational and memory cost.
-- **[Chapter 4: Sparsity and $\ell_1$ Recovery, Completely](./04-sparsity-and-l1-recovery.md)**
-  Exact sparsity vs. compressible (power-law) signals; $\ell_0$ minimization and NP-hardness; $\ell_1$ convex relaxation and the "diamond touches the affine subspace" geometry; Basis Pursuit (BP), Basis Pursuit Denoising (BPDN), and LASSO; the Null Space Property (NSP) and Restricted Isometry Property (RIP) with derivations and concentration intuition; the measurement bound $M \gtrsim C k \log(N/k)$; the Donoho–Tanner phase transition ($\rho^*(\delta)$ at $\delta = 0.25$); noisy/compressible $\ell_2$-$\ell_1$ stability bounds (Candès–Romberg–Tao).
-- **[Chapter 5: Algorithms — ISTA and FISTA](./05-ista-and-fista-algorithms.md)**
-  Deriving ISTA from the quadratic upper bound of smooth + non-smooth optimization; closed-form derivation of soft thresholding as $\text{prox}_{\alpha\lambda\|\cdot\|_1}$; step size selection via the Lipschitz constant $L = \|\Phi\|_2^2$ and power iteration; Nesterov's momentum in FISTA and the $O(1/t)$ vs. $O(1/t^2)$ convergence rates; choosing $\lambda$ (from $\lambda_{\max} = \|\Phi^T y\|_\infty$ to universal thresholding); stopping criteria, warm starts, and FLOP count comparison against the pseudo-inverse.
-- **[Chapter 6: Head-to-Head Comparison & Application to Gradient Compression](./06-gradient-compression-comparison.md)**
-  When each decoder wins; bias vs. variance in SGD (why unscaled $\Phi^+\Phi x$ acts like shrinking the learning rate by $r$, while rescaled $\frac{N}{M}\Phi^+\Phi x$ adds zero-mean variance equivalent to reducing minibatch size); fixed $\Phi$ vs. per-step $\Phi$ (persistent null-space blindness vs. i.i.d. noise); proof that nonlinear decoders ($\ell_1$) violate $\mathcal{D}(\frac{1}{W}\sum y_i) = \frac{1}{W}\sum \mathcal{D}(y_i)$ and how individual sparse gradients dense up when averaged; the exact isomorphism between random subspace projection and Rand-$k$ coordinate sparsification; unbiased vs. biased compressors and Error Feedback (EF); and a quantitative autopsy of why real neural network gradients fail $\ell_1$ recovery at $r = 0.25$.
-- **[Chapter 99: Solutions to Check-Your-Understanding Questions & Annotated References](./99-solutions-and-references.md)**
-  Detailed step-by-step mathematical solutions to every end-of-chapter problem, plus a curated bibliography separating standard theorems from practical heuristics.
+- **[Chapter 1: Prerequisites](./01-prerequisites.md)** — Which norms, subspaces, SVD, probability and convex-optimization tools do the later proofs use?
+- **[Chapter 2: The Basic Problem — Underdetermined Linear Systems](./02-underdetermined-systems.md)** — What does the solution set of $y = \Phi x$ with $M < N$ look like?
+- **[Chapter 3: The Pseudo-Inverse Decoder, Completely](./03-pseudo-inverse-decoder.md)** — Why is the rescaled pseudo-inverse unbiased, and what exact variance does it add?
+- **[Chapter 4: Sparsity and $\ell_1$ Recovery, Completely](./04-sparsity-and-l1-recovery.md)** — When can $\ell_1$ minimization recover a sparse signal exactly, and from how many measurements?
+- **[Chapter 5: Algorithms — ISTA and FISTA](./05-ista-and-fista-algorithms.md)** — How do we solve the LASSO efficiently, and at what cost?
+- **[Chapter 6: Head-to-Head Comparison & Application to Gradient Compression](./06-gradient-compression-comparison.md)** — Which decoder wins on real gradients at $r = 0.25$, and why?
+- **[Chapter 99: Solutions & Annotated References](./99-solutions-and-references.md)** — Worked solutions to the end-of-chapter problems and a bibliography.

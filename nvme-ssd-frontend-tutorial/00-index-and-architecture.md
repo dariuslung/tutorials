@@ -60,7 +60,7 @@ flowchart TB
 
 ---
 
-## 2. The Golden Rule of NVMe Frontend Architecture: The 330-Nanosecond Budget
+## 2. The Golden Rule of NVMe Frontend Architecture: The 333-Nanosecond Budget
 
 Why can't Frontend Firmware just read every doorbell, fetch every command, walk every PRP list, and post every completion in C code? **Do the cycle math:**
 
@@ -100,19 +100,12 @@ Throughout this tutorial, we bridge the external **NVMe Base Specification (v2.0
 
 ## 4. Chapter Map
 
-Every chapter includes **Intuition $\to$ Specification & Hardware Architecture $\to$ Firmware State Machine / Step-by-Step Logic $\to$ Hand-Worked Byte/Cycle Examples $\to$ Runnable Python Hardware/Firmware Co-Simulation Scripts $\to$ Check-Your-Understanding Design Problems**:
+Chapters build on one another; each ends with firmware design problems, solved in Chapter 99.
 
-- **[Chapter 1: PCIe Endpoint, BAR0 Traps & The Boot/Reset State Machine](./01-pcie-and-controller-registers.md)**
-  Posted vs. Non-Posted PCIe TLPs from the endpoint's perspective; why the SSD is always the DMA master; complete bit-level layout of `CAP`, `VS`, `CC`, `CSTS`, `AQA`, `ASQ`, `ACQ`; and the exact HIL Firmware state machines for Cold Boot (`CC.EN: 0 -> 1`), Controller Reset (`CC.EN: 1 -> 0`), Function Level Reset (`FLR`), and Shutdown (`CC.SHN`).
-- **[Chapter 2: Queue Context Tables (QCT), Doorbells & HW Fetch Engines](./02-queues-doorbells-and-arbitration.md)**
-  Designing the internal `SQCT` and `CQCT` SRAM tables; what happens cycle-by-cycle when a doorbell write hits BAR0; the Weighted Round-Robin (WRR) with Urgent Priority Classes hardware arbiter; the Phase Tag (`P` bit) wrap-around state machine; and how the controller handles **CQ Full backpressure** without dropping completions.
-- **[Chapter 3: The Firmware Control Plane — Admin Commands & I/O Queue Lifecycle](./03-admin-commands-and-queue-lifecycle.md)**
-  How HIL Firmware processes `QID = 0`; building `Identify Controller` (`CNS=0x01`) and `Identify Namespace` (`CNS=0x00`) payloads; `Set/Get Features` (`Number of Queues`, `Arbitration`, `Volatile Write Cache`); step-by-step firmware implementation of `Create/Delete I/O CQ` and `Create/Delete I/O SQ` (including non-contiguous queues `PC=0` and the **SQ Deletion Drain Protocol**); and parking/completing **Asynchronous Event Requests (`AER`)**.
-- **[Chapter 4: Data Path Mechanics — SQE Parsing, PRP/SGL Walkers & DMA Engines](./04-nvm-commands-prp-sgl-and-dma.md)**
-  Bit-accurate layout of the 64B NVM Command SQE and 16B CQE; fast-path command validation (`NSID`, `SLBA + NLB` overflow, `Status Code` generation); complete PRP hardware walker architecture (`PRP1`, `PRP2` direct vs. PRP List pointer, chained PRP Lists, and catching `PRP Offset Invalid`); SGL descriptor walking; and slicing unaligned/multi-block host LBAs into 4 KiB FTL `SubReqs`.
-- **[Chapter 5: Read, Write, Flush & Out-of-Order Completion Pipeline](./05-read-write-flush-and-completion-pipeline.md)**
-  End-to-end Write pipeline (Write Buffer allocation, Host-to-Controller DMA, **Early Write Completion** vs. `FUA`, and `Flush` barrier ordering across namespaces); end-to-end Read pipeline (**Out-of-Order 4 KiB NAND page return**, out-of-order Host DMA via PRP offset indexing, and atomic `remaining_slices` reference counting); and the CQE Posting + MSI-X Interrupt Coalescing engine.
-- **[Chapter 6: What Keeps Firmware Engineers Awake — Aborts, Resets, PI & Performance](./06-error-handling-aborts-resets-and-debug.md)**
-  Implementing the `Abort` command (`0x08`) across 4 asynchronous hardware pipeline stages without corrupting host memory; surviving surprise `CC.EN=0` / `PCIe Hot Reset` while DMAs are in flight (**The Generation Counter / Epoch Tag trick**); End-to-End Data Protection (PI / T10 DIF, `PRACT` / `PRINFO` modes); and HIL CPU cycle profiling & PCIe Read-Tag starvation math.
-- **[Chapter 99: Firmware Design Solutions & NVMe Specification Reference](./99-solutions-and-references.md)**
-  Complete step-by-step solutions to all 18 firmware engineering problems across Chapters 1–6, plus a quick-reference table of NVMe 2.0 opcodes, status codes, and register offsets.
+- **[Chapter 1: PCIe Endpoint, BAR0 Traps & The Boot/Reset State Machine](./01-pcie-and-controller-registers.md)** — How does the controller come up, reset and shut down through `CC`/`CSTS`?
+- **[Chapter 2: Queue Context Tables (QCT), Doorbells & HW Fetch Engines](./02-queues-doorbells-and-arbitration.md)** — How do doorbells, queue state and arbitration drive command fetch in hardware?
+- **[Chapter 3: The Firmware Control Plane — Admin Commands & I/O Queue Lifecycle](./03-admin-commands-and-queue-lifecycle.md)** — How does firmware handle Admin commands and create, delete and drain I/O queues?
+- **[Chapter 4: Data Path Mechanics — SQE Parsing, PRP/SGL Walkers & DMA Engines](./04-nvm-commands-prp-sgl-and-dma.md)** — How is a command validated and its host buffers walked and sliced for the FTL?
+- **[Chapter 5: Read, Write, Flush & Out-of-Order Completion Pipeline](./05-read-write-flush-and-completion-pipeline.md)** — How do reads, writes and flushes complete correctly when NAND returns data out of order?
+- **[Chapter 6: What Keeps Firmware Engineers Awake — Aborts, Resets, PI & Performance](./06-error-handling-aborts-resets-and-debug.md)** — How do aborts, resets and data protection stay safe with DMAs in flight?
+- **[Chapter 99: Solutions & NVMe Specification Reference](./99-solutions-and-references.md)** — Worked solutions to the firmware design problems and quick-reference tables.
