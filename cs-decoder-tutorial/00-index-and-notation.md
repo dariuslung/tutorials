@@ -2,8 +2,6 @@
 
 ## A Complete, Self-Contained Tutorial on the Pseudo-Inverse and $\ell_1$ Recovery (ISTA/FISTA)
 
-Welcome to this complete tutorial on the two canonical decoders of linear compressive sensing—the **Moore–Penrose pseudo-inverse** (minimum-norm least squares) and **$\ell_1$ minimization** (Basis Pursuit / LASSO solved via ISTA and FISTA)—tailored specifically for **gradient compression in distributed deep learning**.
-
 ---
 
 ## 1. The Running Example: Distributed Gradient Compression

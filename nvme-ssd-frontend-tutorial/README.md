@@ -2,8 +2,6 @@
 
 ## From PCIe TLP Arrival & Hardware Queue Engines to HIL Firmware, PRP/SGL DMA, and Abort/Reset State Machines
 
-Welcome to this complete, self-contained tutorial on the **NVMe SSD Frontend Interface** (also known as the **Host Interface Layer, or HIL**), written specifically from the perspective of an **SSD Controller Firmware (FW) Engineer** sitting *inside* the storage device.
-
 ---
 
 ## 1. The Firmware Engineer's Perspective: Where We Sit Inside the SoC
