@@ -6,7 +6,7 @@ Self-contained engineering tutorials (`<topic>-tutorial/`) pairing rigorous deri
 
 ## Layout
 
-- `README.md` — Root catalog and repository overview.
+- `README.md` — Root catalog and repository overview (one summary per tutorial; no chapter lists, which live in each tutorial index).
 - `<topic>-tutorial/README.md` & `00-*.md` — Byte-identical index, running system model, and notation/glossary.
 - `<topic>-tutorial/01-*.md`..`0N-*.md` — Sequential chapters (`01` prerequisites through synthesis) + `99-solutions-and-references.md` (worked solutions and annotated references).
 - `<topic>-tutorial/scripts/generate_figures.py` & `figures/*.svg` — Reproducible Matplotlib plot generator and committed vector SVGs.
